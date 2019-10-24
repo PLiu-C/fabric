@@ -63,3 +63,5 @@ func (v *sm2PublicKeyKeyVerifier) Verify(k bccsp.Key, signature, digest []byte, 
 	tf := sm.Verify(k.(*sm2PublicKey).key, string(signature), int64(len(signature)), string(digest), int64(len(digest)))
 	return tf, nil
 }
+
+// May need KeyImporter,
