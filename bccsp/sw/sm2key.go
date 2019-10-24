@@ -2,7 +2,6 @@ package sw
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/hyperledger/fabric/bccsp"
 
@@ -21,7 +20,10 @@ func (k *sm2PrivateKey) Bytes() ([]byte, error) {
 
 // SKI returns the subject key identifier of this key.
 func (k *sm2PrivateKey) SKI() []byte {
-	return nil
+	res := make([]byte, 128)
+	len := []int{cap(res)}
+	k.key.Ski(res, len)
+	return res[:len[0]]
 }
 
 // Symmetric returns true if this key is a symmetric key,
@@ -39,7 +41,7 @@ func (k *sm2PrivateKey) Private() bool {
 // PublicKey returns the corresponding public key part of an asymmetric public/private key pair.
 // This method returns an error in symmetric key schemes.
 func (k *sm2PrivateKey) PublicKey() (bccsp.Key, error) {
-	return &sm2PublicKey{k.GePubkey()}, nil
+	return &sm2PublicKey{k.key.Pubkey()}, nil
 }
 
 type sm2PublicKey struct {
@@ -49,12 +51,18 @@ type sm2PublicKey struct {
 // Bytes converts this key to its byte representation,
 // if this operation is allowed.
 func (k *sm2PublicKey) Bytes() (raw []byte, err error) {
-	return nil, fmt.Errorf("Not supported")
+	res := make([]byte, 128)
+	len := []int{cap(res)}
+	k.key.Bytes(res, len)
+	return res[:len[0]], nil
 }
 
 // SKI returns the subject key identifier of this key.
 func (k *sm2PublicKey) SKI() []byte {
-	return nil
+	res := make([]byte, 128)
+	len := []int{cap(res)}
+	k.key.Ski(res, len)
+	return res[:len[0]]
 }
 
 // Symmetric returns true if this key is a symmetric key,
