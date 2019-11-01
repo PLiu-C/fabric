@@ -42,7 +42,7 @@ var nodeOUMap = map[int]string{
 }
 
 func GenerateLocalMSP(baseDir, name string, sans []string, signCA *ca.CA,
-	tlsCA *ca.CA, nodeType int, nodeOUs bool) error {
+	tlsCA *ca.CA, nodeType int, nodeOUs bool, sigAlgo string) error {
 
 	// create folder structure
 	mspDir := filepath.Join(baseDir, "msp")
@@ -65,7 +65,7 @@ func GenerateLocalMSP(baseDir, name string, sans []string, signCA *ca.CA,
 	keystore := filepath.Join(mspDir, "keystore")
 
 	// generate private key
-	priv, _, err := csp.GeneratePrivateKey(keystore)
+	priv, _, err := csp.GeneratePrivateKey(keystore, sigAlgo)
 	if err != nil {
 		return err
 	}
@@ -124,7 +124,7 @@ func GenerateLocalMSP(baseDir, name string, sans []string, signCA *ca.CA,
 	*/
 
 	// generate private key
-	tlsPrivKey, _, err := csp.GeneratePrivateKey(tlsDir)
+	tlsPrivKey, _, err := csp.GeneratePrivateKey(tlsDir, "ecdsa")
 	if err != nil {
 		return err
 	}
