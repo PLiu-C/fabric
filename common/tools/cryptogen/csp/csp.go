@@ -7,7 +7,6 @@ package csp
 
 import (
 	"crypto"
-	"crypto/ecdsa"
 	"crypto/x509"
 	"encoding/pem"
 	"io/ioutil"
@@ -101,7 +100,7 @@ func GeneratePrivateKey(keystorePath, sigAlgo string) (bccsp.Key,
 
 	if err == nil {
 		// generate key
-		switch sigAlgo: {
+		switch sigAlgo {
 		case "ecdsa":
 			priv, err = csp.KeyGen(&bccsp.ECDSAP256KeyGenOpts{Temporary: false})
 		case "sm2":

@@ -208,9 +208,9 @@ func (id *identity) getHashOpt(hashFamily string) (bccsp.HashOpts, error) {
 	case bccsp.SHA3:
 		return bccsp.GetHashOpt(bccsp.SHA3_256)
 	case bccsp.SM3:
-		return &bccsp.SM3Opts{}
+		return &bccsp.SM3Opts{}, nil
 	case bccsp.SM3SIG:
-		return &bccsp.SM3SIGOpts{}
+		return &bccsp.SM3SIGOpts{}, nil
 	}
 	return nil, errors.Errorf("hash familiy not recognized [%s]", hashFamily)
 }
