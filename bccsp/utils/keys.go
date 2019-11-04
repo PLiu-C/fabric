@@ -27,6 +27,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"unsafe"
 )
 
 // struct to hold info required for PKCS#8
@@ -207,7 +208,7 @@ func PrivateKeyToEncryptedPEM(privateKey interface{}, pwd []byte) ([]byte, error
 		if k == nil {
 			return nil, errors.New("Invalid sm2 private key. It must be different from nil.")
 		}
-		raw, err := x509.MarshalECPrivateKey(k)
+		raw, err := x509.MarshalECPrivateKey((*ecdsa.PrivateKey)(unsafe.Pointer(k)))
 
 		if err != nil {
 			return nil, err
