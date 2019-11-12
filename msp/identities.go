@@ -240,8 +240,6 @@ func (id *signingidentity) Sign(msg []byte) ([]byte, error) {
 	// PLIU: hashOpt, err := id.getHashOpt(id.msp.cryptoConfig.SignatureHashFamily)
 	var hashFamily string
 	switch id.cert.PublicKeyAlgorithm {
-	case x509.ECDSA:
-		hashFamily = id.msp.cryptoConfig.SignatureHashFamily
 	case x509.SM2: //We here Sign the msg instead of the digest of msg
 		hashFamily = bccsp.SM3SIG
 	default:
