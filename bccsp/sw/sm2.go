@@ -1,7 +1,6 @@
 package sw
 
 import (
-	"crypto/rand"
 	"encoding/asn1"
 	"errors"
 	"fmt"
@@ -49,7 +48,7 @@ func UnmarshalSM2Signature(raw []byte) (*big.Int, *big.Int, error) {
 }
 
 func signSM2(k *sm.PrivateKey, digest []byte, opts bccsp.SignerOpts) (signature []byte, err error) {
-	r, s, err := sm.Sign(rand.Reader, k, digest)
+	r, s, err := sm.Sm2Sign(k, digest, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +60,7 @@ func verifySM2(k *sm.PublicKey, signature, digest []byte, opts bccsp.SignerOpts)
 	if err != nil {
 		return false, fmt.Errorf("Failed unmashalling signature [%s]", err)
 	}
-	return sm.Verify(k, digest, r, s), nil
+	return sm.Sm2Verify(k, digest, nil, r, s), nil
 }
 
 type sm2Signer struct{}
@@ -86,7 +85,7 @@ func (v *sm2PublicKeyKeyVerifier) Verify(k bccsp.Key, signature, digest []byte, 
 type sm2KeyGenerator struct{}
 
 func (kg *sm2KeyGenerator) KeyGen(opts bccsp.KeyGenOpts) (bccsp.Key, error) {
-	privKey, err := sm2.GenerateKey(rand.Reader)
+	privKey, err := sm2.GenerateKey()
 	if err != nil {
 		return nil, fmt.Errorf("Failed generating SM2 key: [%s]", err)
 	}
