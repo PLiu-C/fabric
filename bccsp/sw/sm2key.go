@@ -1,10 +1,9 @@
 package sw
 
 import (
+	"errors"
 	"fmt"
-	"unsafe"
 
-	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/sha256"
 	sm "crypto/sm/sm2"
@@ -20,7 +19,8 @@ type sm2PrivateKey struct {
 // Bytes converts this key to its byte representation,
 // if this operation is allowed.
 func (k *sm2PrivateKey) Bytes() (raw []byte, err error) {
-	return x509.MarshalECPrivateKey((*ecdsa.PrivateKey)(unsafe.Pointer(k.privKey)))
+	//return x509.MarshalECPrivateKey((*ecdsa.PrivateKey)(unsafe.Pointer(k.privKey)))
+	return nil, errors.New("Not supported.") // compatible with ecdsa private key
 }
 
 // SKI returns the subject key identifier of this key.
