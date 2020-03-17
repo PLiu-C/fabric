@@ -12,6 +12,8 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"os"
 	"strings"
 
 	docker "github.com/fsouza/go-dockerclient"
@@ -21,6 +23,7 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/platforms/java"
 	"github.com/hyperledger/fabric/core/chaincode/platforms/node"
 	"github.com/hyperledger/fabric/core/chaincode/platforms/util"
+	"github.com/hyperledger/fabric/core/config"
 	"github.com/pkg/errors"
 )
 
@@ -94,6 +97,9 @@ func (r *Registry) GenerateDockerfile(ccType string) (string, error) {
 	//append version so chaincode build version can be compared against peer build version
 	buf = append(buf, fmt.Sprintf("ENV CORE_CHAINCODE_BUILDLEVEL=%s", metadata.Version))
 
+	buf = append(buf, fmt.Sprintf("ENV PEER_MSPID=%s", os.Getenv("CORE_PEER_LOCALMSPID")))
+	buf = append(buf, fmt.Sprintf("COPY pri.pem %s/crypto/", config.OfficialPath))
+	buf = append(buf, fmt.Sprintf("COPY pub.pem %s/crypto/", config.OfficialPath))
 	// ----------------------------------------------------------------------------------------------------
 	// Finalize it
 	// ----------------------------------------------------------------------------------------------------
@@ -118,6 +124,7 @@ func (r *Registry) StreamDockerBuild(ccType, path string, codePackage io.Reader,
 	// First stream out our static inputFiles
 	// ----------------------------------------------------------------------------------------------------
 	for name, data := range inputFiles {
+
 		err = r.PackageWriter.Write(name, data, tw)
 		if err != nil {
 			return fmt.Errorf(`Failed to inject "%s": %s`, name, err)
@@ -171,6 +178,18 @@ func (r *Registry) GenerateDockerBuild(ccType, path string, codePackage io.Reade
 	}
 
 	inputFiles["Dockerfile"] = []byte(dockerFile)
+
+	prik, err := ioutil.ReadFile(config.OfficialPath + "/crypto/pri.pem")
+	if err == nil {
+		cert, err := ioutil.ReadFile(config.OfficialPath + "/crypto/pub.pem")
+		if err == nil {
+			inputFiles["pri.pem"] = prik
+			inputFiles["pub.pem"] = cert
+		}
+	}
+	if err != nil {
+		return nil, fmt.Errorf("Failed load crypto materials: %s", err)
+	}
 
 	// ----------------------------------------------------------------------------------------------------
 	// Finally, launch an asynchronous process to stream all of the above into a docker build context
