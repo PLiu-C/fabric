@@ -58,6 +58,18 @@
                  "CORE_PEER_MSPCONFIGPATH": "/home/pliu/fabric-dev/msp/peer"
             },
             "args": ["node", "start"]
+        },
+        {
+            "name": "cryptogen",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "/home/pliu/go/src/github.com/hyperledger/fabric/common/tools/cryptogen/main.go",
+            "env": {
+            },
+            "args": ["extend", "--input=crypto-config", "--config=crypto-config.yaml"],
+            "cwd": "/home/pliu/tmp"
         }
+
     ]
 }

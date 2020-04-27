@@ -21,7 +21,7 @@ import (
 )
 
 // LoadPrivateKey loads a private key from file in keystorePath
-func LoadPrivateKey(keystorePath string) (bccsp.Key, crypto.Signer, error) {
+func LoadPrivateKey(keystorePath string, algo *string) (bccsp.Key, crypto.Signer, error) {
 	var err error
 	var priv bccsp.Key
 	var s crypto.Signer
@@ -54,7 +54,11 @@ func LoadPrivateKey(keystorePath string) (bccsp.Key, crypto.Signer, error) {
 			if block == nil {
 				return errors.Errorf("%s: wrong PEM encoding", path)
 			}
-			priv, err = csp.KeyImport(block.Bytes, &bccsp.ECDSAPrivateKeyImportOpts{Temporary: true})
+			if algo != nil && (*algo == "sm2") {
+				priv, err = csp.KeyImport(block.Bytes, &bccsp.SM2PrivateKeyImportOpts{Temporary: true})
+			} else {
+				priv, err = csp.KeyImport(block.Bytes, &bccsp.ECDSAPrivateKeyImportOpts{Temporary: true})
+			}
 			if err != nil {
 				return err
 			}
@@ -105,6 +109,8 @@ func GeneratePrivateKey(keystorePath, sigAlgo string) (bccsp.Key,
 			priv, err = csp.KeyGen(&bccsp.ECDSAP256KeyGenOpts{Temporary: false})
 		case "sm2":
 			priv, err = csp.KeyGen(&bccsp.SM2KeyGenOpts{Temporary: false})
+		default:
+			err = errors.Errorf("Unrecognized sigAlgo: %s", sigAlgo)
 		}
 		if err == nil {
 			// create a crypto.Signer

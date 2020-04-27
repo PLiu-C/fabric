@@ -52,7 +52,7 @@ func TestLoadPrivateKey(t *testing.T) {
 	pkFile := filepath.Join(testDir, hex.EncodeToString(priv.SKI())+"_sk")
 	assert.Equal(t, true, checkForFile(pkFile),
 		"Expected to find private key file")
-	loadedPriv, _, _ := csp.LoadPrivateKey(testDir)
+	loadedPriv, _, _ := csp.LoadPrivateKey(testDir, nil)
 	assert.NotNil(t, loadedPriv, "Should have returned a bccsp.Key")
 	assert.Equal(t, priv.SKI(), loadedPriv.SKI(), "Should have same subject identifier")
 	cleanup(testDir)
@@ -73,7 +73,7 @@ func TestLoadPrivateKey_wrongEncoding(t *testing.T) {
 		panic("failed to write to " + filename + ":" + err.Error())
 	}
 	file.Close() // To flush test file content
-	_, _, err = csp.LoadPrivateKey(testDir)
+	_, _, err = csp.LoadPrivateKey(testDir, nil)
 	assert.NotNil(t, err)
 	assert.EqualError(t, err, testDir+"/wrong_encoding_sk: wrong PEM encoding")
 	cleanup(testDir)

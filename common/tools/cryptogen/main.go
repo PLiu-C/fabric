@@ -205,7 +205,7 @@ var (
 	gen           = app.Command("generate", "Generate key material")
 	outputDir     = gen.Flag("output", "The output directory in which to place artifacts").Default("crypto-config").String()
 	genConfigFile = gen.Flag("config", "The configuration template to use").File()
-	sigAlgo       = gen.Flag("algo", "The signature algorithm, default sm2").Default("sm2").String()
+	genSigAlgo    = gen.Flag("algo", "The signature algorithm, sm2 or ecdsa, default sm2").Default("sm2").String()
 
 	showtemplate = app.Command("showtemplate", "Show the default configuration template")
 
@@ -213,6 +213,9 @@ var (
 	ext           = app.Command("extend", "Extend existing network")
 	inputDir      = ext.Flag("input", "The input directory in which existing network place").Default("crypto-config").String()
 	extConfigFile = ext.Flag("config", "The configuration template to use").File()
+	extSigAlgo    = ext.Flag("algo", "The signature algorithm, sm2 or ecdsa, default sm2").Default("sm2").String()
+
+	sigAlgo *string
 )
 
 func main() {
@@ -221,9 +224,11 @@ func main() {
 
 	// "generate" command
 	case gen.FullCommand():
+		sigAlgo = genSigAlgo
 		generate()
 
 	case ext.FullCommand():
+		sigAlgo = extSigAlgo
 		extend()
 
 		// "showtemplate" command
@@ -308,8 +313,8 @@ func extendPeerOrg(orgSpec OrgSpec) {
 	caDir := filepath.Join(orgDir, "ca")
 	tlscaDir := filepath.Join(orgDir, "tlsca")
 
-	signCA := getCA(caDir, orgSpec, orgSpec.CA.CommonName)
-	tlsCA := getCA(tlscaDir, orgSpec, "tls"+orgSpec.CA.CommonName)
+	signCA := getCA(caDir, orgSpec, orgSpec.CA.CommonName, sigAlgo)
+	tlsCA := getCA(tlscaDir, orgSpec, "tls"+orgSpec.CA.CommonName, nil) // nil means using ecdsa
 
 	generateNodes(peersDir, orgSpec.Specs, signCA, tlsCA, msp.PEER, orgSpec.EnableNodeOUs)
 
@@ -356,8 +361,8 @@ func extendOrdererOrg(orgSpec OrgSpec) {
 		return
 	}
 
-	signCA := getCA(caDir, orgSpec, orgSpec.CA.CommonName)
-	tlsCA := getCA(tlscaDir, orgSpec, "tls"+orgSpec.CA.CommonName)
+	signCA := getCA(caDir, orgSpec, orgSpec.CA.CommonName, sigAlgo)
+	tlsCA := getCA(tlscaDir, orgSpec, "tls"+orgSpec.CA.CommonName, nil)
 
 	generateNodes(orderersDir, orgSpec.Specs, signCA, tlsCA, msp.ORDERER, orgSpec.EnableNodeOUs)
 
@@ -721,8 +726,8 @@ func printVersion() {
 	fmt.Println(metadata.GetVersionInfo())
 }
 
-func getCA(caDir string, spec OrgSpec, name string) *ca.CA {
-	_, signer, _ := csp.LoadPrivateKey(caDir)
+func getCA(caDir string, spec OrgSpec, name string, algo *string) *ca.CA {
+	_, signer, _ := csp.LoadPrivateKey(caDir, algo)
 	cert, _ := ca.LoadCertificateECDSA(caDir)
 
 	return &ca.CA{
