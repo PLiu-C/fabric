@@ -34,6 +34,7 @@ const (
 	testOrganizationalUnit = "Hyperledger Fabric"
 	testStreetAddress      = "testStreetAddress"
 	testPostalCode         = "123456"
+	sigAlgo                = "ecdsa"
 )
 
 func TestLoadCertificateECDSA(t *testing.T) {
@@ -48,7 +49,7 @@ func TestLoadCertificateECDSA(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create certs directory: %s", err)
 	}
-	priv, err := csp.GeneratePrivateKey(certDir)
+	priv, err := csp.GeneratePrivateKey(certDir, sigAlgo)
 	assert.NoError(t, err, "Failed to generate signed certificate")
 
 	// create our CA
@@ -63,6 +64,7 @@ func TestLoadCertificateECDSA(t *testing.T) {
 		testOrganizationalUnit,
 		testStreetAddress,
 		testPostalCode,
+		sigAlgo,
 	)
 	assert.NoError(t, err, "Error generating CA")
 
@@ -71,7 +73,7 @@ func TestLoadCertificateECDSA(t *testing.T) {
 		testName3,
 		nil,
 		nil,
-		&priv.PublicKey,
+		&priv.(*ecdsa.PrivateKey).PublicKey,
 		x509.KeyUsageDigitalSignature|x509.KeyUsageKeyEncipherment,
 		[]x509.ExtKeyUsage{x509.ExtKeyUsageAny},
 	)
@@ -136,6 +138,7 @@ func TestNewCA(t *testing.T) {
 		testOrganizationalUnit,
 		testStreetAddress,
 		testPostalCode,
+		sigAlgo,
 	)
 	assert.NoError(t, err, "Error generating CA")
 	assert.NotNil(t, rootCA, "Failed to return CA")
@@ -175,7 +178,7 @@ func TestGenerateSignCertificate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create certs directory: %s", err)
 	}
-	priv, err := csp.GeneratePrivateKey(certDir)
+	priv, err := csp.GeneratePrivateKey(certDir, sigAlgo)
 	assert.NoError(t, err, "Failed to generate signed certificate")
 
 	// create our CA
@@ -190,6 +193,7 @@ func TestGenerateSignCertificate(t *testing.T) {
 		testOrganizationalUnit,
 		testStreetAddress,
 		testPostalCode,
+		sigAlgo,
 	)
 	assert.NoError(t, err, "Error generating CA")
 
@@ -198,7 +202,7 @@ func TestGenerateSignCertificate(t *testing.T) {
 		testName,
 		nil,
 		nil,
-		&priv.PublicKey,
+		&priv.(*ecdsa.PrivateKey).PublicKey,
 		x509.KeyUsageDigitalSignature|x509.KeyUsageKeyEncipherment,
 		[]x509.ExtKeyUsage{x509.ExtKeyUsageAny},
 	)
@@ -213,7 +217,7 @@ func TestGenerateSignCertificate(t *testing.T) {
 		testName,
 		nil,
 		nil,
-		&priv.PublicKey,
+		&priv.(*ecdsa.PrivateKey).PublicKey,
 		x509.KeyUsageDigitalSignature,
 		[]x509.ExtKeyUsage{},
 	)
@@ -222,14 +226,14 @@ func TestGenerateSignCertificate(t *testing.T) {
 
 	// make sure ous are correctly set
 	ous := []string{"TestOU", "PeerOU"}
-	cert, err = rootCA.SignCertificate(certDir, testName, ous, nil, &priv.PublicKey,
+	cert, err = rootCA.SignCertificate(certDir, testName, ous, nil, &priv.(*ecdsa.PrivateKey).PublicKey,
 		x509.KeyUsageDigitalSignature, []x509.ExtKeyUsage{})
 	assert.Contains(t, cert.Subject.OrganizationalUnit, ous[0])
 	assert.Contains(t, cert.Subject.OrganizationalUnit, ous[1])
 
 	// make sure sans are correctly set
 	sans := []string{testName2, testIP}
-	cert, err = rootCA.SignCertificate(certDir, testName, nil, sans, &priv.PublicKey,
+	cert, err = rootCA.SignCertificate(certDir, testName, nil, sans, &priv.(*ecdsa.PrivateKey).PublicKey,
 		x509.KeyUsageDigitalSignature, []x509.ExtKeyUsage{})
 	assert.Contains(t, cert.DNSNames, testName2)
 	assert.Contains(t, cert.IPAddresses, net.ParseIP(testIP).To4())
@@ -239,7 +243,7 @@ func TestGenerateSignCertificate(t *testing.T) {
 	assert.Equal(t, true, checkForFile(pemFile),
 		"Expected to find file "+pemFile)
 
-	_, err = rootCA.SignCertificate(certDir, "empty/CA", nil, nil, &priv.PublicKey,
+	_, err = rootCA.SignCertificate(certDir, "empty/CA", nil, nil, &priv.(*ecdsa.PrivateKey).PublicKey,
 		x509.KeyUsageKeyEncipherment, []x509.ExtKeyUsage{x509.ExtKeyUsageAny})
 	assert.Error(t, err, "Bad name should fail")
 

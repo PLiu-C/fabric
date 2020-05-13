@@ -9,6 +9,7 @@ package sw
 import (
 	"bytes"
 	"crypto/ecdsa"
+	"crypto/sm/sm2"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -141,6 +142,8 @@ func (ks *fileBasedKeyStore) GetKey(ski []byte) (bccsp.Key, error) {
 		}
 
 		switch k := key.(type) {
+		case *sm2.PrivateKey:
+			return &sm2PrivateKey{k}, nil
 		case *ecdsa.PrivateKey:
 			return &ecdsaPrivateKey{k}, nil
 		default:
@@ -154,6 +157,8 @@ func (ks *fileBasedKeyStore) GetKey(ski []byte) (bccsp.Key, error) {
 		}
 
 		switch k := key.(type) {
+		case *sm2.PublicKey:
+			return &sm2PublicKey{k}, nil
 		case *ecdsa.PublicKey:
 			return &ecdsaPublicKey{k}, nil
 		default:
@@ -175,6 +180,18 @@ func (ks *fileBasedKeyStore) StoreKey(k bccsp.Key) (err error) {
 		return errors.New("invalid key. It must be different from nil")
 	}
 	switch kk := k.(type) {
+	case *sm2PrivateKey:
+		err = ks.storePrivateKey(hex.EncodeToString(k.SKI()), kk.privKey)
+		if err != nil {
+			return fmt.Errorf("Failed storing sm2 private key [%s]", err)
+		}
+
+	case *sm2PublicKey:
+		err = ks.storePublicKey(hex.EncodeToString(k.SKI()), kk.pubKey)
+		if err != nil {
+			return fmt.Errorf("Failed storing sm2 public key [%s]", err)
+		}
+
 	case *ecdsaPrivateKey:
 		err = ks.storePrivateKey(hex.EncodeToString(k.SKI()), kk.privKey)
 		if err != nil {
@@ -223,6 +240,8 @@ func (ks *fileBasedKeyStore) searchKeystoreForSKI(ski []byte) (k bccsp.Key, err 
 		}
 
 		switch kk := key.(type) {
+		case *sm2.PrivateKey:
+			k = &sm2PrivateKey{kk}
 		case *ecdsa.PrivateKey:
 			k = &ecdsaPrivateKey{kk}
 		default:

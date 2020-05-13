@@ -11,6 +11,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/sha256"
+	"crypto/sm/sm2"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
@@ -49,7 +50,8 @@ func NewCA(
 	locality,
 	orgUnit,
 	streetAddress,
-	postalCode string,
+	postalCode,
+	sigAlgo string,
 ) (*CA, error) {
 
 	var ca *CA
@@ -59,7 +61,7 @@ func NewCA(
 		return nil, err
 	}
 
-	priv, err := csp.GeneratePrivateKey(baseDir)
+	priv, err := csp.GeneratePrivateKey(baseDir, sigAlgo)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +90,7 @@ func NewCA(
 		name,
 		&template,
 		&template,
-		&priv.PublicKey,
+		csp.GetPublicKey(priv),
 		priv,
 	)
 	if err != nil {
@@ -97,7 +99,7 @@ func NewCA(
 	ca = &CA{
 		Name: name,
 		Signer: &csp.ECDSASigner{
-			PrivateKey: priv,
+			PrivateKey: priv, // PLIU: here priv is a generic thing
 		},
 		SignCert:           x509Cert,
 		Country:            country,
@@ -118,7 +120,7 @@ func (ca *CA) SignCertificate(
 	name string,
 	orgUnits,
 	alternateNames []string,
-	pub *ecdsa.PublicKey,
+	pub interface{},
 	ku x509.KeyUsage,
 	eku []x509.ExtKeyUsage,
 ) (*x509.Certificate, error) {
@@ -168,9 +170,16 @@ func (ca *CA) SignCertificate(
 }
 
 // compute Subject Key Identifier
-func computeSKI(privKey *ecdsa.PrivateKey) []byte {
+func computeSKI(privKey interface{}) []byte {
+	var raw []byte
+
 	// Marshall the public key
-	raw := elliptic.Marshal(privKey.Curve, privKey.PublicKey.X, privKey.PublicKey.Y)
+	switch k := privKey.(type) {
+	case *ecdsa.PrivateKey:
+		raw = elliptic.Marshal(k.Curve, k.PublicKey.X, k.PublicKey.Y)
+	case *sm2.PrivateKey:
+		raw = elliptic.Marshal(k.Curve, k.PublicKey.X, k.PublicKey.Y)
+	}
 
 	// Hash it
 	hash := sha256.Sum256(raw)
@@ -247,7 +256,7 @@ func genCertificateECDSA(
 	name string,
 	template,
 	parent *x509.Certificate,
-	pub *ecdsa.PublicKey,
+	pub interface{},
 	priv interface{},
 ) (*x509.Certificate, error) {
 

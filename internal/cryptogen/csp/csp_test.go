@@ -24,13 +24,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const sigAlgo = "ecdsa"
+
 func TestLoadPrivateKey(t *testing.T) {
 	testDir, err := ioutil.TempDir("", "csp-test")
 	if err != nil {
 		t.Fatalf("Failed to create test directory: %s", err)
 	}
 	defer os.RemoveAll(testDir)
-	priv, err := csp.GeneratePrivateKey(testDir)
+	priv, err := csp.GeneratePrivateKey(testDir, sigAlgo)
 	if err != nil {
 		t.Fatalf("Failed to generate private key: %s", err)
 	}
@@ -114,13 +116,13 @@ func TestGeneratePrivateKey(t *testing.T) {
 	defer os.RemoveAll(testDir)
 
 	expectedFile := filepath.Join(testDir, "priv_sk")
-	priv, err := csp.GeneratePrivateKey(testDir)
+	priv, err := csp.GeneratePrivateKey(testDir, sigAlgo)
 	assert.NoError(t, err, "Failed to generate private key")
 	assert.NotNil(t, priv, "Should have returned an *ecdsa.Key")
 	assert.Equal(t, true, checkForFile(expectedFile),
 		"Expected to find private key file")
 
-	priv, err = csp.GeneratePrivateKey("notExist")
+	priv, err = csp.GeneratePrivateKey("notExist", sigAlgo)
 	assert.Contains(t, err.Error(), "no such file or directory")
 }
 

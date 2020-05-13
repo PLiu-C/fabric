@@ -51,7 +51,7 @@ ZsQXrlIqlmNalfYPX+NDDELqlpXQBeEqnA==
 	ecPK, err := x509.ParseECPrivateKey(pemBlock.Bytes)
 	assert.NoError(t, err)
 
-	ec1, err := x509.MarshalECPrivateKey(ecPK)
+	ec1, err := x509.MarshalECPrivateKey(ecPK.(*ecdsa.PrivateKey))
 	assert.NoError(t, err)
 
 	pkcs8, err := x509.MarshalPKCS8PrivateKey(ecPK)
