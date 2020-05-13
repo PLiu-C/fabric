@@ -643,6 +643,7 @@ func generateChannelArtifacts() (string, error) {
 		"generate",
 		fmt.Sprintf("--output=%s", cryptoConfigDir),
 		fmt.Sprintf("--config=%s", filepath.Join("testdata", "crypto-config.yaml")),
+		fmt.Sprintf("--algo=%s", "ecdsa"),
 	}
 	b, err := exec.Command(cryptogen, args...).CombinedOutput()
 	if err != nil {

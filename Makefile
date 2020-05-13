@@ -45,7 +45,7 @@
 #   - verify - runs unit tests for only the changed package tree
 
 ALPINE_VER ?= 3.12
-BASE_VERSION = 2.2.2
+BASE_VERSION = 2.2.2sm
 
 # 3rd party image version
 # These versions are also set in the runners in ./integration/runners/
@@ -60,7 +60,7 @@ MAKEFLAGS += --no-builtin-rules
 BUILD_DIR ?= build
 
 EXTRA_VERSION ?= $(shell git rev-parse --short HEAD)
-PROJECT_VERSION=$(BASE_VERSION)-snapshot-$(EXTRA_VERSION)
+PROJECT_VERSION=$(BASE_VERSION)
 
 # TWO_DIGIT_VERSION is derived, e.g. "2.0", especially useful as a local tag
 # for two digit references to most recent baseos and ccenv patch releases
