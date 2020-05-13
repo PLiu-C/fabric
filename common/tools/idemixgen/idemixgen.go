@@ -150,7 +150,7 @@ func readRevocationKey() *ecdsa.PrivateKey {
 	key, err := x509.ParseECPrivateKey(block.Bytes)
 	handleError(err)
 
-	return key
+	return key.(*ecdsa.PrivateKey)
 }
 
 // checkDirectoryNotExists checks whether a directory with the given path already exists and exits if this is the case

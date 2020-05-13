@@ -44,8 +44,8 @@
 #   - docker-tag-stable - re-tags the images made by 'make docker' with the :stable tag
 #   - help-docs - generate the command reference docs
 
-BASE_VERSION = 1.4.10
-PREV_VERSION = 1.4.9
+BASE_VERSION = 1.4.9sm
+PREV_VERSION = 1.4.8
 CHAINTOOL_RELEASE=1.1.3
 BASEIMAGE_RELEASE=0.4.21
 
@@ -113,7 +113,8 @@ include docker-env.mk
 
 all: native docker checks
 
-checks: basic-checks unit-test integration-test
+#checks: basic-checks unit-test integration-test
+checks: unit-test integration-test
 
 basic-checks: license spelling trailing-spaces linter check-metrics-doc
 
