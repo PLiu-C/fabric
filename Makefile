@@ -44,10 +44,10 @@
 #   - docker-tag-stable - re-tags the images made by 'make docker' with the :stable tag
 #   - help-docs - generate the command reference docs
 
-BASE_VERSION = 1.4.7
+BASE_VERSION = 1.4.7sm
 PREV_VERSION = 1.4.6
 CHAINTOOL_RELEASE=1.1.3
-BASEIMAGE_RELEASE=0.4.20
+BASEIMAGE_RELEASE=0.4.20sm
 
 # Allow to build as a submodule setting the main project to
 # the PROJECT_NAME env variable, for example,
@@ -61,7 +61,7 @@ endif
 BUILD_DIR ?= .build
 
 EXTRA_VERSION ?= $(shell git rev-parse --short HEAD)
-PROJECT_VERSION=$(BASE_VERSION)-snapshot-$(EXTRA_VERSION)
+PROJECT_VERSION=$(BASE_VERSION)
 
 PKGNAME = github.com/$(PROJECT_NAME)
 CGO_FLAGS = CGO_CFLAGS=" "

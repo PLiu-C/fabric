@@ -7,7 +7,6 @@ package csp
 
 import (
 	"crypto"
-	"crypto/ecdsa"
 	"crypto/x509"
 	"encoding/pem"
 	"io/ioutil"
@@ -22,7 +21,7 @@ import (
 )
 
 // LoadPrivateKey loads a private key from file in keystorePath
-func LoadPrivateKey(keystorePath string) (bccsp.Key, crypto.Signer, error) {
+func LoadPrivateKey(keystorePath string, algo *string) (bccsp.Key, crypto.Signer, error) {
 	var err error
 	var priv bccsp.Key
 	var s crypto.Signer
@@ -55,7 +54,11 @@ func LoadPrivateKey(keystorePath string) (bccsp.Key, crypto.Signer, error) {
 			if block == nil {
 				return errors.Errorf("%s: wrong PEM encoding", path)
 			}
-			priv, err = csp.KeyImport(block.Bytes, &bccsp.ECDSAPrivateKeyImportOpts{Temporary: true})
+			if algo != nil && (*algo == "sm2") {
+				priv, err = csp.KeyImport(block.Bytes, &bccsp.SM2PrivateKeyImportOpts{Temporary: true})
+			} else {
+				priv, err = csp.KeyImport(block.Bytes, &bccsp.ECDSAPrivateKeyImportOpts{Temporary: true})
+			}
 			if err != nil {
 				return err
 			}
@@ -79,7 +82,7 @@ func LoadPrivateKey(keystorePath string) (bccsp.Key, crypto.Signer, error) {
 }
 
 // GeneratePrivateKey creates a private key and stores it in keystorePath
-func GeneratePrivateKey(keystorePath string) (bccsp.Key,
+func GeneratePrivateKey(keystorePath, sigAlgo string) (bccsp.Key,
 	crypto.Signer, error) {
 
 	var err error
@@ -98,18 +101,26 @@ func GeneratePrivateKey(keystorePath string) (bccsp.Key,
 		},
 	}
 	csp, err := factory.GetBCCSPFromOpts(opts)
+
 	if err == nil {
-		// generate a key
-		priv, err = csp.KeyGen(&bccsp.ECDSAP256KeyGenOpts{Temporary: false})
+		// generate key
+		switch sigAlgo {
+		case "ecdsa":
+			priv, err = csp.KeyGen(&bccsp.ECDSAP256KeyGenOpts{Temporary: false})
+		case "sm2":
+			priv, err = csp.KeyGen(&bccsp.SM2KeyGenOpts{Temporary: false})
+		default:
+			err = errors.Errorf("Unrecognized sigAlgo: %s", sigAlgo)
+		}
 		if err == nil {
 			// create a crypto.Signer
 			s, err = signer.New(csp, priv)
 		}
 	}
-	return priv, s, err
+	return priv, s, nil
 }
 
-func GetECPublicKey(priv bccsp.Key) (*ecdsa.PublicKey, error) {
+func GetECPublicKey(priv bccsp.Key) (interface{}, error) { // interface{} is a *ecdsa.PublicKey or *sm2.PublicKey
 
 	// get the public key
 	pubKey, err := priv.PublicKey()
@@ -126,5 +137,5 @@ func GetECPublicKey(priv bccsp.Key) (*ecdsa.PublicKey, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ecPubKey.(*ecdsa.PublicKey), nil
+	return ecPubKey, nil
 }
