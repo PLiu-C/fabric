@@ -68,7 +68,7 @@ func TestToLowS(t *testing.T) {
 			key := ecdsa.PublicKey{
 				Curve: curve,
 			}
-			assert.Equal(t, test.expectedSig, toLowS(key, test.sig))
+			assert.Equal(t, test.expectedSig, toLowS(&key, test.sig))
 		})
 	}
 }

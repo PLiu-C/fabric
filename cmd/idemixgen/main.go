@@ -172,7 +172,7 @@ func readRevocationKey() *ecdsa.PrivateKey {
 	key, err := x509.ParseECPrivateKey(block.Bytes)
 	handleError(err)
 
-	return key
+	return key.(*ecdsa.PrivateKey)
 }
 
 func readRevocationPublicKey() []byte {

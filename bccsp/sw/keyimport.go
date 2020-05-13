@@ -8,6 +8,7 @@ package sw
 
 import (
 	"crypto/ecdsa"
+	"crypto/sm/sm2"
 	"crypto/x509"
 	"errors"
 	"fmt"
@@ -124,6 +125,10 @@ func (ki *x509PublicKeyImportOptsKeyImporter) KeyImport(raw interface{}, opts bc
 	pk := x509Cert.PublicKey
 
 	switch pk.(type) {
+	case *sm2.PublicKey:
+		return ki.bccsp.KeyImporters[reflect.TypeOf(&bccsp.SM2GoPublicKeyImportOpts{})].KeyImport(
+			pk,
+			&bccsp.SM2GoPublicKeyImportOpts{Temporary: opts.Ephemeral()})
 	case *ecdsa.PublicKey:
 		return ki.bccsp.KeyImporters[reflect.TypeOf(&bccsp.ECDSAGoPublicKeyImportOpts{})].KeyImport(
 			pk,
