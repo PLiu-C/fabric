@@ -19,7 +19,7 @@ WORKDIR $GOPATH/src/github.com/hyperledger/fabric
 FROM golang as tools
 RUN make configtxgen configtxlator cryptogen peer discover idemixgen
 
-FROM golang:${GO_VER}-alpine
+FROM golang:${GO_VER}-alpine${ALPINE_VER}
 # git is required to support `go list -m`
 RUN apk add --no-cache \
 	bash \
