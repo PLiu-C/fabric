@@ -69,7 +69,7 @@ func parsePrivateKeyPEM(rawKey []byte) (interface{}, error) {
 		return nil, errors.WithMessage(err, "pem bytes are not PKCS8 encoded ")
 	}
 
-	switch key(.type) {
+	switch key.(type) {
 	case *ecdsa.PrivateKey, *sm2.PrivateKey:
 		return key, nil
 	default:
