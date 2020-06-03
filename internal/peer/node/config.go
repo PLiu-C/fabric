@@ -41,6 +41,11 @@ func ledgerConfig() *ledger.Config {
 		purgeInterval = viper.GetInt("ledger.pvtdataStore.purgeInterval")
 	}
 
+	mongoQueryLimit := 1000
+	if viper.IsSet("ledger.state.mongoDBConfig.queryLimit") {
+		mongoQueryLimit = viper.GetInt("ledger.state.mongoDBConfig.QueryLimit")
+	}
+
 	rootFSPath := filepath.Join(coreconfig.GetPath("peer.fileSystemPath"), "ledgersData")
 	snapshotsRootDir := viper.GetString("ledger.snapshots.rootDir")
 	if snapshotsRootDir == "" {
@@ -80,6 +85,20 @@ func ledgerConfig() *ledger.Config {
 			RedoLogPath:             filepath.Join(rootFSPath, "couchdbRedoLogs"),
 			UserCacheSizeMBs:        viper.GetInt("ledger.state.couchDBConfig.cacheSize"),
 		}
+	} else if conf.StateDBConfig.StateDatabase == "MongoDB" {
+		conf.StateDBConfig.MongoDB = &ledger.MongoDBCConfig{
+			Address:             viper.GetString("ledger.state.mongoDBConfig.mongoDBAddress"),
+			Username:            viper.GetString("ledger.state.mongoDBConfig.username"),
+			Password:            viper.GetString("ledger.state.mongoDBConfig.password"),
+			AuthSource:          "admin",
+			DatabaseName:        "statedb",
+			MaxRetries:          viper.GetInt("ledger.state.mongoDBConfig.maxRetries"),
+			MaxRetriesOnStartup: viper.GetInt("ledger.state.mongoDBConfig.maxRetriesOnStartup"),
+			RequestTimeout:      viper.GetDuration("ledger.state.mongoDBConfig.requestTimeout"),
+			QueryLimit:          mongoQueryLimit,
+			MaxBatchUpdateSize:  maxBatchUpdateSize,
+		}
 	}
+
 	return conf
 }

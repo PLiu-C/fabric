@@ -57,6 +57,8 @@ type StateDBConfig struct {
 	// CouchDB is the configuration for CouchDB.  It is used when StateDatabase
 	// is set to "CouchDB".
 	CouchDB *CouchDBConfig
+	//MongoDB configuration, used when StateDatabase is set to "MongoDB"
+	MongoDB *MongoDBConfig
 }
 
 // CouchDBConfig is a structure used to configure a CouchInstance.
@@ -95,6 +97,20 @@ type CouchDBConfig struct {
 	// UserCacheSizeMBs needs to be a multiple of 32 MB. If it is not a multiple of 32 MB,
 	// the peer would round the size to the next multiple of 32 MB.
 	UserCacheSizeMBs int
+}
+
+// Config for mongodb as statedb
+type MongoDBConfig struct {
+	Address             string
+	Username            string
+	Password            string
+	AuthSource          string
+	DatabaseName        string
+	MaxRetries          int
+	MaxRetriesOnStartup int
+	RequestTimeout      time.Duration
+	QueryLimit          int
+	MaxBatchUpdateSize  int
 }
 
 // PrivateDataConfig is a structure used to configure a private data storage provider.
