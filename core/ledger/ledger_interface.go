@@ -19,6 +19,7 @@ import (
 	commonledger "github.com/hyperledger/fabric/common/ledger"
 	"github.com/hyperledger/fabric/common/metrics"
 	"github.com/hyperledger/fabric/core/ledger/util/couchdb"
+	"github.com/hyperledger/fabric/core/ledger/util/mongodb"
 )
 
 // Initializer encapsulates dependencies for PeerLedgerProvider
@@ -54,6 +55,8 @@ type StateDBConfig struct {
 	// CouchDB is the configuration for CouchDB.  It is used when StateDatabase
 	// is set to "CouchDB".
 	CouchDB *couchdb.Config
+	//MongoDB configuration, used when StateDatabase is set to "MongoDB"
+	MongoDB *mongodb.Config
 }
 
 // PrivateDataConfig is a structure used to configure a private data storage provider.

@@ -84,7 +84,7 @@ func TestLoadPrivateKey_BadPEM(t *testing.T) {
 		{
 			name:   "not EC key",
 			data:   pkcs8RSAPem,
-			errMsg: fmt.Sprintf("%s: pem bytes do not contain an EC private key", badPEMFile),
+			errMsg: fmt.Sprintf("%s: pem bytes do not contain an EC or SM private key", badPEMFile),
 		},
 		{
 			name:   "not PKCS8 encoded",

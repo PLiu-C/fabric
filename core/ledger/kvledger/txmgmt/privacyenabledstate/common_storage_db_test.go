@@ -25,12 +25,13 @@ func TestHealthCheckRegister(t *testing.T) {
 		HealthCheckRegistry: fakeHealthCheckRegistry,
 	}
 
-	err := dbProvider.RegisterHealthChecker()
+	dbname := "couchdb"
+	err := dbProvider.RegisterHealthChecker(dbname)
 	gt.Expect(err).NotTo(HaveOccurred())
 	gt.Expect(fakeHealthCheckRegistry.RegisterCheckerCallCount()).To(Equal(0))
 
 	dbProvider.VersionedDBProvider = &statecouchdb.VersionedDBProvider{}
-	err = dbProvider.RegisterHealthChecker()
+	err = dbProvider.RegisterHealthChecker(dbname)
 	gt.Expect(err).NotTo(HaveOccurred())
 	gt.Expect(fakeHealthCheckRegistry.RegisterCheckerCallCount()).To(Equal(1))
 

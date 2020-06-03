@@ -20,6 +20,7 @@ import (
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/statedb"
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/statedb/statecouchdb"
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/statedb/stateleveldb"
+	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/statedb/statemongodb"
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/version"
 	"github.com/hyperledger/fabric/core/ledger/util"
 	"github.com/pkg/errors"
@@ -32,6 +33,7 @@ const (
 	pvtDataPrefix  = "p"
 	hashDataPrefix = "h"
 	couchDB        = "CouchDB"
+	mongoDB        = "MongoDB"
 )
 
 // StateDBConfig encapsulates the configuration for stateDB on the ledger.
@@ -63,11 +65,19 @@ func NewCommonStorageDBProvider(
 	var vdbProvider statedb.VersionedDBProvider
 	var err error
 
+	var dbRegisterName string
+
 	if stateDBConf != nil && stateDBConf.StateDatabase == couchDB {
 		cache := statedb.NewCache(stateDBConf.CouchDB.UserCacheSizeMBs, sysNamespaces)
 		if vdbProvider, err = statecouchdb.NewVersionedDBProvider(stateDBConf.CouchDB, metricsProvider, cache); err != nil {
 			return nil, err
 		}
+		dbRegisterName = "couchdb"
+	} else if stateDBConf != nil && stateDBConf.StateDatabase == mongoDB {
+		if vdbProvider, err = statemongodb.NewVersionedDBProvider(stateDBConf.MongoDB, metricsProvider); err != nil {
+			return nil, err
+		}
+		dbRegisterName = "mongodb"
 	} else {
 		if vdbProvider, err = stateleveldb.NewVersionedDBProvider(stateDBConf.LevelDBPath); err != nil {
 			return nil, err
@@ -76,7 +86,7 @@ func NewCommonStorageDBProvider(
 
 	dbProvider := &CommonStorageDBProvider{vdbProvider, healthCheckRegistry, bookkeeperProvider}
 
-	err = dbProvider.RegisterHealthChecker()
+	err = dbProvider.RegisterHealthChecker(dbRegisterName)
 	if err != nil {
 		return nil, err
 	}
@@ -85,9 +95,9 @@ func NewCommonStorageDBProvider(
 }
 
 // RegisterHealthChecker implements function from interface DBProvider
-func (p *CommonStorageDBProvider) RegisterHealthChecker() error {
+func (p *CommonStorageDBProvider) RegisterHealthChecker(dbname string) error {
 	if healthChecker, ok := p.VersionedDBProvider.(healthz.HealthChecker); ok {
-		return p.HealthCheckRegistry.RegisterChecker("couchdb", healthChecker)
+		return p.HealthCheckRegistry.RegisterChecker(dbname, healthChecker)
 	}
 	return nil
 }
