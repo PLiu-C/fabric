@@ -21,7 +21,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"unsafe"
 
 	"github.com/pkg/errors"
 )
@@ -191,7 +190,7 @@ func toLowS(key crypto.PublicKey, sig ECDSASignature) ECDSASignature {
 	case *ecdsa.PublicKey:
 		k = kk
 	case *sm2.PublicKey:
-		k = (*ecdsa.PublicKey)(unsafe.Pointer(kk))
+		return sig
 	default:
 		panic(fmt.Sprintf("toLowS: invalid public key %v", kk))
 	}
