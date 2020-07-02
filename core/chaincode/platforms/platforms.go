@@ -101,7 +101,6 @@ func (r *Registry) GenerateDockerfile(ccType string) (string, error) {
 	//append version so chaincode build version can be compared against peer build version
 	buf = append(buf, fmt.Sprintf("ENV CORE_CHAINCODE_BUILDLEVEL=%s", metadata.Version))
 
-	buf = append(buf, fmt.Sprintf("ENV PEER_MSPID=%s", os.Getenv("CORE_PEER_LOCALMSPID")))
 	buf = append(buf, fmt.Sprintf("COPY pri.pem %s/crypto/", config.OfficialPath))
 	buf = append(buf, fmt.Sprintf("COPY pub.pem %s/crypto/", config.OfficialPath))
 	// ----------------------------------------------------------------------------------------------------
