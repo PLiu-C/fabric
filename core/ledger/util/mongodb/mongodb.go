@@ -279,15 +279,16 @@ func (dbclient *MongoDatabase) ReadDoc(id string) (*MongoDoc, string, error) {
 
 	res := client.Database(dbName).Collection(colName).FindOne(ctx, bson.M{"_id": id})
 	if res.Err() != nil {
-		return nil, "", res.Err()
-	}
-
-	err := res.Decode(&docMetadata)
-	if err != nil {
+		err := res.Err()
 		if strings.Contains(err.Error(), "no documents in result") {
 			logger.Debugf("Database Name : [%s] Collection Name : [%s] Document not found", dbclient.DatabaseName, dbclient.CollectionName)
 			return nil, "", nil
 		}
+		return nil, "", err
+	}
+
+	err := res.Decode(&docMetadata)
+	if err != nil {
 		return nil, "", err
 	}
 
