@@ -1,6 +1,7 @@
-package mongodb
+package statemongodb
 
 import (
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -8,6 +9,7 @@ import (
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/common/metrics/disabled"
 	"github.com/hyperledger/fabric/core/ledger/util/mongodbtest"
+	"github.com/hyperledger/fabric/integration/runner"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,6 +17,24 @@ const badConnectURL = "mongodb:2701" // should be sth like "mongodb://localhost:
 
 var testAddress string
 var cleanupMongoDB = func() {}
+
+// MongoDBSetup setup external couchDB resource.
+func MongoDBSetup( /*binds []string*/ ) (addr string, cleanup func()) {
+	// check if couchDB is being started externally.
+	externalMongo, set := os.LookupEnv("MONGODB_ADDR")
+	if set {
+		return externalMongo, func() {}
+	}
+
+	mongoDB := &runner.MongoDB{}
+	//couchDB.Binds = binds
+
+	if err := mongoDB.Start(); err != nil {
+		err := fmt.Errorf("failed to start mongoDB: %s", err)
+		panic(err)
+	}
+	return mongoDB.Address(), func() { mongoDB.Stop() }
+}
 
 func testConfig() *Config {
 	return &Config{

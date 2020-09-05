@@ -86,7 +86,7 @@ func ledgerConfig() *ledger.Config {
 			UserCacheSizeMBs:        viper.GetInt("ledger.state.couchDBConfig.cacheSize"),
 		}
 	} else if conf.StateDBConfig.StateDatabase == "MongoDB" {
-		conf.StateDBConfig.MongoDB = &ledger.MongoDBCConfig{
+		conf.StateDBConfig.MongoDB = &ledger.MongoDBConfig{
 			Address:             viper.GetString("ledger.state.mongoDBConfig.mongoDBAddress"),
 			Username:            viper.GetString("ledger.state.mongoDBConfig.username"),
 			Password:            viper.GetString("ledger.state.mongoDBConfig.password"),

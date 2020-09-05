@@ -1,5 +1,6 @@
 /*
 Copyright IBM Corp. All Rights Reserved.
+
 SPDX-License-Identifier: Apache-2.0
 */
 
@@ -14,7 +15,6 @@ import (
 
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/statedb"
 	"github.com/hyperledger/fabric/core/ledger/util/mongodb"
-	"github.com/hyperledger/fabric/core/ledger/util/mongodbtest"
 )
 
 // TestVDBEnv provides a mongodb backed versioned db for testing
@@ -55,7 +55,7 @@ func (env *testVDBEnv) init(t testing.TB) {
 
 func (env *testVDBEnv) startExternalResource() {
 	if env.mongoAddress == "" {
-		env.mongoAddress, env.cleanupMongoDB = mongodbtest.MongoDBSetup()
+		env.mongoAddress, env.cleanupMongoDB = MongoDBSetup()
 	}
 }
 
