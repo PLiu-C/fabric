@@ -1,0 +1,1 @@
+When building gotools, last tool can not be compiled. Simply remove that from gotools.mk.
